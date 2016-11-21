@@ -1,0 +1,5 @@
+/Users/AngelaLee/Documents/senior design/test-opencv/CMakeFiles/removeBackground.dir
+/Users/AngelaLee/Documents/senior design/test-opencv/CMakeFiles/rebuild_cache.dir
+/Users/AngelaLee/Documents/senior design/test-opencv/CMakeFiles/edit_cache.dir
+/Users/AngelaLee/Documents/senior design/test-opencv/CMakeFiles/mykmeans.dir
+/Users/AngelaLee/Documents/senior design/test-opencv/CMakeFiles/BlurImage.dir
