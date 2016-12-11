@@ -11,9 +11,9 @@ using namespace cv;
 struct User {
   int chosenX;
   int chosenY;
+  Mat clusteredImg; //for testing (doesnt get used for computations)
   Mat skinImg; //img containing desired background/skin color
   Mat destImg; //img to edit background & replace w/ skin color
-  Mat highContrastImg; //img to use to do kmeans
   Vec3b chosenColor;
   bool colorPicked;
 };
@@ -59,6 +59,14 @@ void CallBackFunction2(int event, int x, int y, int s, void* user) {
     ((struct User*)user)->chosenX = x;
     ((struct User*)user)->chosenY = y;
     ((struct User*)user)->colorPicked = true;
+  }
+  return;
+}
+void CallBackFunction3(int event, int x, int y, int s, void* user) {
+  
+  if (event == EVENT_LBUTTONDOWN) {
+    std::cout<<"mouse clicked - this position : (" << x << " , " << y << ") " << std::endl; 
+    std::cout<<"color here : "<< (((struct User*)user)->clusteredImg).at<Vec3b>(y,x) << std::endl; 
   }
   return;
 }
@@ -115,21 +123,19 @@ void replaceBackground(Mat clusteredImg, Mat src, Vec3b backgroundColor, Vec3b n
 
   namedWindow(imgName, 1);
   setMouseCallback(imgName, CallBackFunction2, u);
-
-  imshow(imgName, new_image);
 }
 
 void myKmeans(User* u, String imgName) {
   Vec3b newColor = u->chosenColor;
 
-  Mat src = u->highContrastImg;
+  Mat src = u->destImg;
   Mat samples(src.rows * src.cols, 3, CV_32F);
   for( int y = 0; y < src.rows; y++ )
     for( int x = 0; x < src.cols; x++ )
       for( int z = 0; z < 3; z++)
         samples.at<float>(y + x*src.rows, z) = src.at<Vec3b>(y,x)[z];
 
-  int clusters = 5;
+  int clusters = 6;
   Mat labels;
   int attempts = 5;
   Mat centers;
@@ -146,6 +152,10 @@ void myKmeans(User* u, String imgName) {
       new_image.at<Vec3b>(y,x)[2] = centers.at<float>(cluster_idx, 2);
     }
   }
+  u->clusteredImg = new_image;
+  namedWindow("clustered image", 3);
+  setMouseCallback("clustered image", CallBackFunction3, u);
+  imshow("clustered image", u->clusteredImg); 
 
   //determine background color(s) and remove 
   Vec3b colorTopLeft = new_image.at<Vec3b>(0,0);
@@ -169,7 +179,7 @@ void myKmeans(User* u, String imgName) {
   std::cout << "finished doing all BFS's " << std::endl;
 
   //finally, resize image
-  cv::Size newSize;
+  cv::Size newSize; 
   int new_width = std::min(600, src.size().width);
   newSize.width = new_width;
   newSize.height = new_width * src.size().height / src.size().width;
@@ -179,10 +189,11 @@ void myKmeans(User* u, String imgName) {
   namedWindow(imgName, 1);
   setMouseCallback(imgName, CallBackFunction2, u);
   std::cout<<"background color: " << backgroundColor<<std::endl;
- 
-  cv::imwrite("../new_images/finalimg_velvet.jpg", finalimg);
 
-  // imshow(imgName, finalimg);
+  
+  cv::imwrite("../new_images/finalimg.jpg", finalimg);
+
+  imshow(imgName, finalimg);
 
   // old, linear replace background alg
   //replaceBackground(new_image, src, backgroundColor, newColor, "new image");
@@ -213,12 +224,8 @@ int main( int argc, char** argv)
   Mat skinImg = imread (argv[1], 1);
   u->skinImg = skinImg; 
   Mat destImg = imread( argv[2], 1 );
-  //increase contrast + decrease brightness of this destImg
-  Mat contrast = destImg;
-  double alpha = 1.2;
-  int beta = -50;
-  //contrast(y,x) = alpha*contrast(y,x) + beta;
-  contrast.convertTo(u->highContrastImg, -1, alpha, beta);
+  u->destImg = destImg;
+
 
   namedWindow("pick skincolor", 0);
   setMouseCallback("pick skincolor", CallBackFunction, u);
