@@ -6,8 +6,6 @@
 #include <algorithm>
 #include "opencv2/highgui/highgui.hpp"
 
-using namespace cv;
-
 struct User {
   int chosenX;
   int chosenY;
@@ -50,26 +48,18 @@ Vec3b findMaxCommon(Vec3b v1, Vec3b v2, Vec3b v3, Vec3b v4) {
   return v1; //no matching pairs: default is v1
 }
 
-void CallBackFunction2(int event, int x, int y, int s, void* user) {
+// void CallBackFunction2(int event, int x, int y, int s, void* user) {
   
-  if (event == EVENT_LBUTTONDOWN) {
-    std::cout<<"mouse clicked - this position : (" << x << " , " << y << ") " << std::endl; 
-    ((struct User*)user)->chosenColor = (((struct User*)user)->destImg).at<Vec3b>(y,x); 
-    std::cout<<"color here : "<< ((struct User*)user)->chosenColor << std::endl; 
-    ((struct User*)user)->chosenX = x;
-    ((struct User*)user)->chosenY = y;
-    ((struct User*)user)->colorPicked = true;
-  }
-  return;
-}
-void CallBackFunction3(int event, int x, int y, int s, void* user) {
-  
-  if (event == EVENT_LBUTTONDOWN) {
-    std::cout<<"mouse clicked - this position : (" << x << " , " << y << ") " << std::endl; 
-    std::cout<<"color here : "<< (((struct User*)user)->clusteredImg).at<Vec3b>(y,x) << std::endl; 
-  }
-  return;
-}
+//   if (event == EVENT_LBUTTONDOWN) {
+//     std::cout<<"mouse clicked - this position : (" << x << " , " << y << ") " << std::endl; 
+//     ((struct User*)user)->chosenColor = (((struct User*)user)->destImg).at<Vec3b>(y,x); 
+//     std::cout<<"color here : "<< ((struct User*)user)->chosenColor << std::endl; 
+//     ((struct User*)user)->chosenX = x;
+//     ((struct User*)user)->chosenY = y;
+//     ((struct User*)user)->colorPicked = true;
+//   }
+//   return;
+// }
 
 void replaceBackground(Mat clusteredImg, Mat src, Vec3b backgroundColor, Vec3b newColor, String imgName) {
     
@@ -122,7 +112,7 @@ void replaceBackground(Mat clusteredImg, Mat src, Vec3b backgroundColor, Vec3b n
   u->destImg = new_image;
 
   namedWindow(imgName, 1);
-  setMouseCallback(imgName, CallBackFunction2, u);
+  // setMouseCallback(imgName, CallBackFunction2, u);
 }
 
 void myKmeans(User* u, String imgName) {
@@ -135,7 +125,7 @@ void myKmeans(User* u, String imgName) {
       for( int z = 0; z < 3; z++)
         samples.at<float>(y + x*src.rows, z) = src.at<Vec3b>(y,x)[z];
 
-  int clusters = 6;
+  int clusters = 5;
   Mat labels;
   int attempts = 5;
   Mat centers;
@@ -153,9 +143,9 @@ void myKmeans(User* u, String imgName) {
     }
   }
   u->clusteredImg = new_image;
-  namedWindow("clustered image", 3);
-  setMouseCallback("clustered image", CallBackFunction3, u);
-  imshow("clustered image", u->clusteredImg); 
+  // namedWindow("clustered image", 3);
+  // setMouseCallback("clustered image", CallBackFunction3, u);
+  // imshow("clustered image", u->clusteredImg); 
 
   //determine background color(s) and remove 
   Vec3b colorTopLeft = new_image.at<Vec3b>(0,0);
@@ -187,11 +177,11 @@ void myKmeans(User* u, String imgName) {
 
   u->destImg = finalimg;
   namedWindow(imgName, 1);
-  setMouseCallback(imgName, CallBackFunction2, u);
-  std::cout<<"background color: " << backgroundColor<<std::endl;
+  // setMouseCallback(imgName, CallBackFunction2, u);
+  // std::cout<<"background color: " << backgroundColor<<std::endl;
 
   
-  cv::imwrite("../new_images/finalimg.jpg", finalimg);
+  cv::imwrite("../new_images2/finalimg-leather2.jpg", finalimg);
 
   imshow(imgName, finalimg);
 
@@ -199,19 +189,19 @@ void myKmeans(User* u, String imgName) {
   //replaceBackground(new_image, src, backgroundColor, newColor, "new image");
 }
 
-void CallBackFunction(int event, int x, int y, int s, void* user) {
+// void CallBackFunction(int event, int x, int y, int s, void* user) {
   
-  if (event == EVENT_LBUTTONDOWN) {
-    std::cout<<"mouse clicked - position : (" << x << " , " << y << ") " << std::endl; 
-    ((struct User*)user)->chosenColor = (((struct User*)user)->skinImg).at<Vec3b>(y,x); 
-    ((struct User*)user)->chosenX = x;
-    ((struct User*)user)->chosenY = y;
-    ((struct User*)user)->colorPicked = true;
+//   if (event == EVENT_LBUTTONDOWN) {
+//     std::cout<<"mouse clicked - position : (" << x << " , " << y << ") " << std::endl; 
+//     ((struct User*)user)->chosenColor = (((struct User*)user)->skinImg).at<Vec3b>(y,x); 
+//     ((struct User*)user)->chosenX = x;
+//     ((struct User*)user)->chosenY = y;
+//     ((struct User*)user)->colorPicked = true;
 
-    myKmeans((struct User*)user, "new image");
-  }
-  return;
-}
+//     myKmeans((struct User*)user, "new image");
+//   }
+//   return;
+// }
 
 
 
@@ -226,10 +216,13 @@ int main( int argc, char** argv)
   Mat destImg = imread( argv[2], 1 );
   u->destImg = destImg;
 
+  u->chosenColor=(u->skinImg).at<Vec3b>(0,0); 
+  u->colorPicked = true;
+  myKmeans(u, "new image");
 
-  namedWindow("pick skincolor", 0);
-  setMouseCallback("pick skincolor", CallBackFunction, u);
-  imshow("pick skincolor", skinImg);
+  //namedWindow("pick skincolor", 0);
+  //setMouseCallback("pick skincolor", CallBackFunction, u);
+  //imshow("pick skincolor", skinImg);
 
   // maybe perform gaussian blur on the outline of the foreground? 
   // 1. find outline

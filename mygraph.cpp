@@ -241,10 +241,10 @@ Mat MyGraph::BFS(int s) {
 		if (areEqual(destImg.at<Vec3b>(destImg.rows-1, x), backgroundColor) && 
 			bottomEdgeThreshold < 5) {
 			bottomEdgeThreshold++;
-			std::cout<<"found background on bottom edge"<<std::endl;
-			int idx = (destImg.rows-1)*destImg.cols + x;
-			destImg = BFS(idx);
-		}
+		std::cout<<"found background on bottom edge"<<std::endl;
+		int idx = (destImg.rows-1)*destImg.cols + x;
+		destImg = BFS(idx);
+	}
 		//right+left edges
 		for (int y = 0; y < destImg.cols; y++) { //top+bottom row
 			//left edge
